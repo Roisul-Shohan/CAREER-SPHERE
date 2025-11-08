@@ -79,12 +79,6 @@ export async function getUserOnboardingStatus() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) throw new Error("Unauthorized");
 
-  const user = await db.user.findUnique({
-    where: { id: session.user.id },
-  });
-
-  if (!user) throw new Error("User not found");
-
   try {
     const user = await db.user.findUnique({
       where: {

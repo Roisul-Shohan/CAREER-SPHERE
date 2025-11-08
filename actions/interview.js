@@ -6,7 +6,8 @@ import { authOptions } from "@/lib/auth";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+// Use Gemini 2.5 Flash for more reliable JSON outputs and lower latency
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 export async function generateQuiz() {
   const session = await getServerSession(authOptions);
@@ -48,12 +49,41 @@ export async function generateQuiz() {
     const result = await model.generateContent(prompt);
     const response = result.response;
     const text = response.text();
+    console.log("Raw AI response:", text); // Debug log
+
+    // Remove common code fences and surrounding whitespace
     const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
-    const quiz = JSON.parse(cleanedText);
+    console.log("Cleaned text:", cleanedText); // Debug log
+
+    // Try to parse JSON directly, if it fails attempt to extract the first JSON object block
+    let quiz;
+    try {
+      quiz = JSON.parse(cleanedText);
+    } catch (parseError) {
+      console.warn("Initial JSON.parse failed, attempting to extract JSON block:", parseError.message);
+      const match = cleanedText.match(/\{[\s\S]*\}/);
+      if (match) {
+        try {
+          quiz = JSON.parse(match[0]);
+        } catch (innerErr) {
+          console.error("Failed to parse extracted JSON block:", innerErr.message);
+          throw new Error("AI returned invalid JSON for quiz generation");
+        }
+      } else {
+        console.error("No JSON object found in AI response");
+        throw new Error("AI returned non-JSON response for quiz generation");
+      }
+    }
+
+    if (!quiz || !Array.isArray(quiz.questions)) {
+      console.error("Parsed quiz JSON does not contain questions array:", quiz);
+      throw new Error("AI returned JSON without questions array");
+    }
 
     return quiz.questions;
   } catch (error) {
     console.error("Error generating quiz:", error);
+    console.error("Error details:", error.message);
     throw new Error("Failed to generate quiz questions");
   }
 }
@@ -68,11 +98,15 @@ export async function saveQuizResult(questions, answers, score) {
 
   if (!user) throw new Error("User not found");
 
-  const questionResults = questions.map((q, index) => ({
+  // Ensure questions and answers are plain objects
+  const plainQuestions = JSON.parse(JSON.stringify(questions));
+  const plainAnswers = JSON.parse(JSON.stringify(answers));
+
+  const questionResults = plainQuestions.map((q, index) => ({
     question: q.question,
     answer: q.correctAnswer,
-    userAnswer: answers[index],
-    isCorrect: q.correctAnswer === answers[index],
+    userAnswer: plainAnswers[index],
+    isCorrect: q.correctAnswer === plainAnswers[index],
     explanation: q.explanation,
   }));
 
@@ -122,7 +156,8 @@ export async function saveQuizResult(questions, answers, score) {
       },
     });
 
-    return assessment;
+    // Convert Prisma object to plain object to avoid serialization issues
+    return JSON.parse(JSON.stringify(assessment));
   } catch (error) {
     console.error("Error saving quiz result:", error);
     throw new Error("Failed to save quiz result");
@@ -149,7 +184,8 @@ export async function getAssessments() {
       },
     });
 
-    return assessments;
+    // Convert Prisma objects to plain objects to avoid serialization issues
+    return JSON.parse(JSON.stringify(assessments));
   } catch (error) {
     console.error("Error fetching assessments:", error);
     throw new Error("Failed to fetch assessments");

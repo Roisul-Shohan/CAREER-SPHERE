@@ -11,12 +11,21 @@ const useFetch = (cb) => {
     setError(null);
 
     try {
-      const response = await cb(...args);
+      // Filter out DOM elements and other non-serializable objects
+      const serializableArgs = args.filter(arg => {
+        return typeof arg !== 'object' ||
+               arg === null ||
+               Array.isArray(arg) ||
+               (typeof arg === 'object' && arg.constructor === Object);
+      });
+
+      const response = await cb(...serializableArgs);
       setData(response);
       setError(null);
     } catch (error) {
       setError(error);
       toast.error(error.message);
+      console.error("useFetch error:", error);
     } finally {
       setLoading(false);
     }
