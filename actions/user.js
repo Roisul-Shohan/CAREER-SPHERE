@@ -27,21 +27,26 @@ export async function updateUser(data) {
           },
         });
 
-        // If industry doesn't exist, create it with default values
+        // If industry doesn't exist, generate insights (prefer AI) and create it
         if (!industryInsight) {
-          // Temporarily disable AI insights generation due to API issues
-          // const insights = await generateAIInsights(data.industry);
+          let insights = null;
+          try {
+            insights = await generateAIInsights(data.industry);
+          } catch (aiError) {
+            console.warn("AI insights generation failed during onboarding, falling back to defaults:", aiError.message);
+          }
 
-          industryInsight = await db.industryInsight.create({
+          // Use tx to create within the same transaction
+          industryInsight = await tx.industryInsight.create({
             data: {
               industry: data.industry,
-              salaryRanges: [],
-              growthRate: 5.0,
-              demandLevel: "Medium",
-              topSkills: ["Communication", "Problem Solving"],
-              marketOutlook: "Neutral",
-              keyTrends: ["Digital Transformation", "Remote Work"],
-              recommendedSkills: ["Communication", "Problem Solving"],
+              salaryRanges: insights?.salaryRanges || [],
+              growthRate: insights?.growthRate ?? 5.0,
+              demandLevel: insights?.demandLevel || "Medium",
+              topSkills: insights?.topSkills || ["Communication", "Problem Solving"],
+              marketOutlook: insights?.marketOutlook || "Neutral",
+              keyTrends: insights?.keyTrends || ["Digital Transformation", "Remote Work"],
+              recommendedSkills: insights?.recommendedSkills || ["Communication", "Problem Solving"],
               nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
             },
           });

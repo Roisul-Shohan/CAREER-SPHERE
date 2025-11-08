@@ -29,16 +29,24 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
 const DashboardView = ({ insights }) => {
-  // Transform salary data for the chart
-  const salaryData = insights.salaryRanges.map((range) => ({
-    name: range.role,
-    min: range.min / 1000,
-    max: range.max / 1000,
-    median: range.median / 1000,
+  // Defensive defaults to avoid crashing if `insights` is missing or malformed
+  const safe = insights || {};
+
+  const salaryRangesArr = Array.isArray(safe.salaryRanges)
+    ? safe.salaryRanges
+    : [];
+
+  // Transform salary data for the chart (guard numeric ops)
+  const salaryData = salaryRangesArr.map((range) => ({
+    name: range?.role || "Unknown",
+    min: (Number(range?.min) || 0) / 1000,
+    max: (Number(range?.max) || 0) / 1000,
+    median: (Number(range?.median) || 0) / 1000,
   }));
 
   const getDemandLevelColor = (level) => {
-    switch (level.toLowerCase()) {
+    const l = (level || "").toString().toLowerCase();
+    switch (l) {
       case "high":
         return "bg-green-500";
       case "medium":
@@ -51,7 +59,8 @@ const DashboardView = ({ insights }) => {
   };
 
   const getMarketOutlookInfo = (outlook) => {
-    switch (outlook.toLowerCase()) {
+    const o = (outlook || "").toString().toLowerCase();
+    switch (o) {
       case "positive":
         return { icon: TrendingUp, color: "text-green-500" };
       case "neutral":
@@ -63,15 +72,17 @@ const DashboardView = ({ insights }) => {
     }
   };
 
-  const OutlookIcon = getMarketOutlookInfo(insights.marketOutlook).icon;
-  const outlookColor = getMarketOutlookInfo(insights.marketOutlook).color;
+  const marketOutlook = safe.marketOutlook || "Neutral";
+  const OutlookIcon = getMarketOutlookInfo(marketOutlook).icon;
+  const outlookColor = getMarketOutlookInfo(marketOutlook).color;
 
-  // Format dates using date-fns
-  const lastUpdatedDate = format(new Date(insights.lastUpdated), "dd/MM/yyyy");
-  const nextUpdateDistance = formatDistanceToNow(
-    new Date(insights.nextUpdate),
-    { addSuffix: true }
-  );
+  // Format dates using date-fns with safe fallbacks
+  const lastUpdatedDate = safe.lastUpdated
+    ? format(new Date(safe.lastUpdated), "dd/MM/yyyy")
+    : "N/A";
+  const nextUpdateDistance = safe.nextUpdate
+    ? formatDistanceToNow(new Date(safe.nextUpdate), { addSuffix: true })
+    : "unknown";
 
   return (
     <div className="space-y-6">
@@ -89,7 +100,7 @@ const DashboardView = ({ insights }) => {
             <OutlookIcon className={`h-4 w-4 ${outlookColor}`} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{insights.marketOutlook}</div>
+            <div className="text-2xl font-bold">{marketOutlook}</div>
             <p className="text-xs text-muted-foreground">
               Next update {nextUpdateDistance}
             </p>
@@ -105,9 +116,9 @@ const DashboardView = ({ insights }) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {insights.growthRate.toFixed(1)}%
+              {(Number(safe.growthRate) || 0).toFixed(1)}%
             </div>
-            <Progress value={insights.growthRate} className="mt-2" />
+            <Progress value={Number(safe.growthRate) || 0} className="mt-2" />
           </CardContent>
         </Card>
 
@@ -117,10 +128,10 @@ const DashboardView = ({ insights }) => {
             <BriefcaseIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{insights.demandLevel}</div>
+            <div className="text-2xl font-bold">{safe.demandLevel || "Medium"}</div>
             <div
               className={`h-2 w-full rounded-full mt-2 ${getDemandLevelColor(
-                insights.demandLevel
+                safe.demandLevel
               )}`}
             />
           </CardContent>
@@ -133,7 +144,7 @@ const DashboardView = ({ insights }) => {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-1">
-              {insights.topSkills.map((skill) => (
+              {(Array.isArray(safe.topSkills) ? safe.topSkills : []).map((skill) => (
                 <Badge key={skill} variant="secondary">
                   {skill}
                 </Badge>
@@ -195,7 +206,7 @@ const DashboardView = ({ insights }) => {
           </CardHeader>
           <CardContent>
             <ul className="space-y-4">
-              {insights.keyTrends.map((trend, index) => (
+              {(Array.isArray(safe.keyTrends) ? safe.keyTrends : []).map((trend, index) => (
                 <li key={index} className="flex items-start space-x-2">
                   <div className="h-2 w-2 mt-2 rounded-full bg-primary" />
                   <span>{trend}</span>
@@ -212,7 +223,7 @@ const DashboardView = ({ insights }) => {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {insights.recommendedSkills.map((skill) => (
+              {(Array.isArray(safe.recommendedSkills) ? safe.recommendedSkills : []).map((skill) => (
                 <Badge key={skill} variant="outline">
                   {skill}
                 </Badge>
