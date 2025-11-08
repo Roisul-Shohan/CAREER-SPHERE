@@ -30,10 +30,22 @@ const HeroSection = () => {
     <section className="w-full pt-36 md:pt-48 pb-10">
       <div className="space-y-6 text-center">
         <div className="space-y-6 mx-auto">
-          <h1 className="text-5xl font-bold md:text-6xl lg:text-7xl xl:text-8xl gradient-title animate-gradient">
-            CAREERSPHERE
-            <br />
-            Your AI Career Coach for Professional Success
+          <h1 className="text-4xl font-bold md:text-6xl lg:text-6xl xl:text-8xl leading-tight text-center">
+            {/* Fixed 3-line heading (Option A): first word white, second word gradient */}
+            <div className="block">
+              <span className="text-gray-400">CAREER</span>
+              <span className="ml-3 bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">SPHERE</span>
+            </div>
+
+            <div className="block">
+              <span className="text-gray-400">Your AI Car</span>
+              <span className=" bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">eer Coach for</span>
+            </div>
+
+            <div className="block">
+              <span className="text-gray-400">Professional</span>
+              <span className="ml-3 bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">Success</span>
+            </div>
           </h1>
           <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl">
             Advance your career with personalized guidance, interview prep, and
@@ -44,11 +56,6 @@ const HeroSection = () => {
           <Link href="/dashboard">
             <Button size="lg" className="px-8">
               Get Started
-            </Button>
-          </Link>
-          <Link href="https://www.youtube.com/roadsidecoder">
-            <Button size="lg" variant="outline" className="px-8">
-              Watch Demo
             </Button>
           </Link>
         </div>
