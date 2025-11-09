@@ -4,7 +4,7 @@ CAREERSPHERE is a comprehensive AI-powered career development platform built wit
 
 ## 🌐 Live Demo
 
-[🚀 View Live Application](https://career-sphere-8z9d.vercel.app/)
+[🚀 View Live Application](https://career-sphere-ik2l.vercel.app/)
 
 ## ✨ Features
 
