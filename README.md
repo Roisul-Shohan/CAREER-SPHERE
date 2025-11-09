@@ -2,6 +2,10 @@
 
 CAREERSPHERE is a comprehensive AI-powered career development platform built with Next.js, featuring manual authentication, PostgreSQL database, and modern UI components.
 
+## 🌐 Live Demo
+
+[🚀 View Live Application](https://career-sphere-8z9d.vercel.app/)
+
 ## ✨ Features
 
 ### 🔐 Authentication System
