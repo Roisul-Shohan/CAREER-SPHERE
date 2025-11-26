@@ -149,20 +149,11 @@ export default function Quiz() {
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex justify-between">
-        {!showExplanation && (
-          <Button
-            onClick={() => setShowExplanation(true)}
-            variant="outline"
-            disabled={!answers[currentQuestion]}
-          >
-            Show Explanation
-          </Button>
-        )}
+      <CardFooter>
         <Button
           onClick={handleNext}
           disabled={!answers[currentQuestion] || savingResult}
-          className="ml-auto"
+          className="w-full"
         >
           {savingResult && (
             <BarLoader className="mt-4" width={"100%"} color="gray" />

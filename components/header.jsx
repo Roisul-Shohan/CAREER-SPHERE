@@ -105,6 +105,12 @@ export default function Header() {
                     {session.user?.name || session.user?.email}
                   </div>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => signOut({ callbackUrl: "/" })}
                     className="text-red-600 focus:text-red-600"

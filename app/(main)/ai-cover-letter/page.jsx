@@ -1,18 +1,25 @@
-export default function CoverLetterPage() {
+import { getCoverLetters } from "@/actions/cover-letter";
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import CoverLetterList from "./_components/cover-letter-list";
+
+export default async function CoverLetterPage() {
+  const coverLetters = await getCoverLetters();
+
   return (
-    <div className="container mx-auto py-6">
-      <div className="text-center py-12">
-        <h1 className="text-3xl font-bold mb-4">AI Cover Letter Generator</h1>
-        <p className="text-muted-foreground mb-8">
-          This feature is coming soon! Stay tuned for our AI-powered cover letter generation tools.
-        </p>
-        <div className="bg-gradient-to-r from-blue-600 to-teal-600 text-white p-6 rounded-lg max-w-md mx-auto">
-          <h2 className="text-xl font-semibold mb-2">🚀 Coming Soon</h2>
-          <p className="text-sm opacity-90">
-            Personalized cover letters, industry-specific templates, and AI content optimization.
-          </p>
-        </div>
+    <div>
+      <div className="flex flex-col md:flex-row gap-2 items-center justify-between mb-5">
+        <h1 className="text-6xl font-bold gradient-title">My Cover Letters</h1>
+        <Link href="/ai-cover-letter/new">
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Create New
+          </Button>
+        </Link>
       </div>
+
+      <CoverLetterList coverLetters={coverLetters} />
     </div>
   );
 }

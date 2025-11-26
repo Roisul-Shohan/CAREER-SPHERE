@@ -17,26 +17,32 @@ export async function updateUser(data) {
   if (!user) throw new Error("User not found");
 
   try {
+    // Generate AI insights outside the transaction to avoid timeouts
+    let insights = null;
+    const existingIndustry = await db.industryInsight.findUnique({
+      where: { industry: data.industry },
+    });
+
+    if (!existingIndustry) {
+      try {
+        insights = await generateAIInsights(data.industry);
+      } catch (aiError) {
+        console.warn("AI insights generation failed during onboarding, falling back to defaults:", aiError.message);
+      }
+    }
+
     // Start a transaction to handle both operations
     const result = await db.$transaction(
       async (tx) => {
-        // First check if industry exists
+        // First check if industry exists (in case it was created concurrently)
         let industryInsight = await tx.industryInsight.findUnique({
           where: {
             industry: data.industry,
           },
         });
 
-        // If industry doesn't exist, generate insights (prefer AI) and create it
+        // If industry doesn't exist, create it with pre-generated insights
         if (!industryInsight) {
-          let insights = null;
-          try {
-            insights = await generateAIInsights(data.industry);
-          } catch (aiError) {
-            console.warn("AI insights generation failed during onboarding, falling back to defaults:", aiError.message);
-          }
-
-          // Use tx to create within the same transaction
           industryInsight = await tx.industryInsight.create({
             data: {
               industry: data.industry,
@@ -78,6 +84,19 @@ export async function updateUser(data) {
     console.error("Error updating user and industry:", error.message);
     throw new Error("Failed to update profile");
   }
+}
+
+export async function getCurrentUser() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const user = await db.user.findUnique({
+    where: { id: session.user.id },
+  });
+
+  if (!user) throw new Error("User not found");
+
+  return user;
 }
 
 export async function getUserOnboardingStatus() {
