@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, User, Save, CheckCircle } from "lucide-react";
+import { Loader2, User, Save, CheckCircle, Upload, Camera } from "lucide-react";
 import { getCurrentUser, updateUser } from "@/actions/user";
 import useFetch from "@/hooks/use-fetch";
 
@@ -30,6 +30,8 @@ const profileSchema = z.object({
   bio: z.string().optional(),
   experience: z.number().min(0).max(50).optional(),
   skills: z.string().optional(),
+  currentJob: z.string().optional(),
+  profilePicture: z.string().optional(),
 });
 
 export default function ProfilePage() {
@@ -42,6 +44,7 @@ export default function ProfilePage() {
     formState: { errors },
     reset,
     watch,
+    setValue,
   } = useForm({
     resolver: zodResolver(profileSchema),
   });
@@ -73,12 +76,15 @@ export default function ProfilePage() {
         bio: profileData.bio || "",
         experience: profileData.experience || 0,
         skills: profileData.skills?.join(", ") || "",
+        currentJob: profileData.currentJob || "",
+        profilePicture: profileData.profilePicture || "",
       });
     }
   }, [profileData, reset]);
 
   useEffect(() => {
     if (updateResult) {
+      console.log("Update result received:", updateResult);
       setUserData(updateResult);
       setIsEditing(false);
       toast.success("Profile updated successfully!");
@@ -97,9 +103,36 @@ export default function ProfilePage() {
     }
   };
 
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Upload failed");
+      }
+
+      const result = await response.json();
+      setValue("profilePicture", result.imageUrl);
+      setUserData(prev => ({ ...prev, profilePicture: result.imageUrl }));
+      toast.success("Profile picture uploaded successfully!");
+    } catch (error) {
+      toast.error(error.message || "Failed to upload image");
+    }
+  };
+
   const calculateProfileCompletion = () => {
     if (!userData) return 0;
-    const fields = ['name', 'email', 'industry', 'subIndustry', 'bio', 'experience', 'skills'];
+    const fields = ['name', 'email', 'industry', 'subIndustry', 'bio', 'experience', 'skills', 'currentJob', 'profilePicture'];
     const completedFields = fields.filter(field => {
       const value = userData[field];
       return value !== null && value !== undefined && value !== "" &&
@@ -186,6 +219,63 @@ export default function ProfilePage() {
                 />
                 {errors.email && (
                   <p className="text-sm text-red-500">{errors.email.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="currentJob">Current Job</Label>
+                <Input
+                  id="currentJob"
+                  {...register("currentJob")}
+                  disabled={!isEditing}
+                  placeholder="e.g., Software Engineer at Google"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Profile Picture */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile Picture</CardTitle>
+              <CardDescription>
+                Upload a profile picture (max 5MB, JPEG/PNG/GIF only)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  {userData?.profilePicture ? (
+                    <img
+                      src={userData.profilePicture}
+                      alt="Profile"
+                      className="w-20 h-20 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center">
+                      <Camera className="w-8 h-8 text-gray-400" />
+                    </div>
+                  )}
+                </div>
+                {isEditing && (
+                  <div className="space-y-2">
+                    <Label htmlFor="profilePicture" className="cursor-pointer">
+                      <div className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                        <Upload className="w-4 h-4" />
+                        <span className="text-gray-700">Upload Image</span>
+                      </div>
+                    </Label>
+                    <Input
+                      id="profilePicture"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Max 5MB, JPEG/PNG/GIF only
+                    </p>
+                  </div>
                 )}
               </div>
             </CardContent>

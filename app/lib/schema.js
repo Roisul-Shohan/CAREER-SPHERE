@@ -25,6 +25,7 @@ export const onboardingSchema = z.object({
         .filter(Boolean)
       : undefined
   ),
+  linkedinId: z.string().optional(),
 });
 
 export const entrySchema = z.object({

@@ -182,6 +182,21 @@ const OnboardingForm = ({ industries }) => {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="linkedinId">LinkedIn ID</Label>
+              <Input
+                id="linkedinId"
+                placeholder="e.g., john-doe-123456"
+                {...register("linkedinId")}
+              />
+              <p className="text-sm text-muted-foreground">
+                Your LinkedIn profile ID (optional)
+              </p>
+              {errors.linkedinId && (
+                <p className="text-sm text-red-500">{errors.linkedinId.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="bio">Professional Bio</Label>
               <Textarea
                 id="bio"

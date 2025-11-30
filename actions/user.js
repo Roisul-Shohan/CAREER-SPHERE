@@ -64,10 +64,15 @@ export async function updateUser(data) {
             id: user.id,
           },
           data: {
+            name: data.name,
+            email: data.email,
             industry: data.industry,
             experience: data.experience,
             bio: data.bio,
             skills: data.skills,
+            linkedinId: data.linkedinId,
+            currentJob: data.currentJob,
+            profilePicture: data.profilePicture,
           },
         });
 
@@ -79,9 +84,10 @@ export async function updateUser(data) {
     );
 
     revalidatePath("/");
-    return result.user;
+    console.log("User updated successfully:", result.updatedUser);
+    return result.updatedUser;
   } catch (error) {
-    console.error("Error updating user and industry:", error.message);
+    console.error("Error updating user and industry:", error);
     throw new Error("Failed to update profile");
   }
 }
@@ -101,7 +107,9 @@ export async function getCurrentUser() {
 
 export async function getUserOnboardingStatus() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) {
+    return { isOnboarded: false };
+  }
 
   try {
     const user = await db.user.findUnique({
@@ -118,6 +126,18 @@ export async function getUserOnboardingStatus() {
     };
   } catch (error) {
     console.error("Error checking onboarding status:", error);
-    throw new Error("Failed to check onboarding status");
+    return { isOnboarded: false };
   }
+}
+
+export async function getUserAvatar() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return null;
+
+  const user = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: { profilePicture: true }
+  });
+
+  return user?.profilePicture;
 }

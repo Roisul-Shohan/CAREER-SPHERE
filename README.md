@@ -1,6 +1,6 @@
 # CAREERSPHERE - AI Career Coach Platform 🚀
 
-CAREERSPHERE is a comprehensive AI-powered career development platform built with Next.js, featuring manual authentication, PostgreSQL database, and modern UI components.
+CAREERSPHERE is a comprehensive AI-powered career development platform built with Next.js 15, React 19, and PostgreSQL. It provides personalized career guidance, interview preparation, resume building, and community networking for professionals.
 
 ## 🌐 Live Demo
 
@@ -8,33 +8,62 @@ CAREERSPHERE is a comprehensive AI-powered career development platform built wit
 
 ## ✨ Features
 
-### 🔐 Authentication System
+### 🔐 Authentication & User Management
 - **Manual Authentication** with NextAuth.js and Credentials Provider
-- **Secure Password Hashing** using bcrypt
+- **Secure Password Hashing** using bcryptjs
 - **JWT Session Management** with secure cookies
 - **Custom Signup/Login Pages** with ShadCN UI components
+- **User Onboarding** with industry selection and profile completion
+- **Profile Management** with avatar upload and personal details
 
 ### 🎯 Career Development Tools
-- **AI Interview Preparation** - Interactive quiz system with personalized feedback
-- **Resume Builder** - Coming Soon
-- **Cover Letter Generator** - Coming Soon
-- **Industry Insights** - AI-powered career guidance and market analysis
+- **AI Interview Preparation** - Interactive quiz system with personalized feedback and performance tracking
+- **Resume Builder** - Dynamic resume creation with multiple sections and ATS optimization
+- **Cover Letter Generator** - AI-powered cover letter creation for specific job applications
+- **Industry Insights** - AI-generated career guidance, salary ranges, and market analysis
+- **Skills Assessment** - Personalized quiz generation based on industry and experience
+
+### 🌐 Community Features
+- **Professional Networking** - Connect with fellow professionals
+- **Discussion Posts** - Share career advice, job search tips, and industry insights
+- **Interactive Comments** - Engage in meaningful discussions
+- **Like System** - Show appreciation for valuable content
+- **User Profiles** - View professional backgrounds and achievements
 
 ### 🎨 Modern UI/UX
-- **ShadCN UI Components** for consistent design
+- **ShadCN UI Components** for consistent, accessible design
 - **Blue/Teal Gradient Theme** for professional appearance
-- **Responsive Design** for all device sizes
-- **Dark/Light Mode Support**
+- **Responsive Design** optimized for all device sizes
+- **Dark/Light Mode Support** with system preference detection
+- **Loading States** and smooth transitions throughout the app
 
 ## 🛠 Tech Stack
 
-- **Frontend**: Next.js 15, React 19, Tailwind CSS
-- **Backend**: Next.js API Routes, NextAuth.js
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: NextAuth.js with Credentials Provider
-- **UI Components**: ShadCN UI, Radix UI
-- **AI Integration**: Google Gemini API (for future features)
-- **Deployment**: Ready for Vercel/Netlify
+### Frontend
+- **Next.js 15** - React framework with App Router
+- **React 19** - Latest React with concurrent features
+- **Tailwind CSS** - Utility-first CSS framework
+- **ShadCN UI** - Modern component library built on Radix UI
+- **React Hook Form** - Performant forms with easy validation
+- **Zod** - TypeScript-first schema validation
+
+### Backend
+- **Next.js API Routes** - Serverless API endpoints
+- **NextAuth.js** - Complete authentication solution
+- **Prisma ORM** - Type-safe database access
+- **PostgreSQL** - Robust relational database
+
+### AI & Integrations
+- **Google Gemini API** - AI-powered content generation
+- **Inngest** - Background job processing for AI insights
+- **Sonner** - Toast notifications
+- **Lucide React** - Beautiful icon library
+
+### Development & Deployment
+- **TypeScript** - Type-safe JavaScript
+- **ESLint** - Code linting and formatting
+- **Prisma Studio** - Database management GUI
+- **Vercel/Netlify** - Optimized deployment platforms
 
 ## 🚀 Getting Started
 
@@ -81,30 +110,38 @@ CAREERSPHERE is a comprehensive AI-powered career development platform built wit
 6. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
-## 📁 Project Structure
-
-```
-CAREERSPHERE/
-├── app/                    # Next.js App Router
-│   ├── (auth)/            # Authentication pages
-│   ├── (main)/            # Protected pages
-│   ├── api/               # API routes
-│   └── globals.css        # Global styles
-├── components/            # Reusable UI components
-│   ├── ui/               # ShadCN UI components
-│   └── providers.jsx     # NextAuth Session Provider
-├── actions/              # Server actions
-├── lib/                  # Utility functions
-├── prisma/               # Database schema & migrations
-└── public/               # Static assets
-```
-
 ## 🔧 Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
+- `npm run dev` - Start development server on http://localhost:3000
+- `npm run build` - Build application for production
 - `npm run start` - Start production server
-- `npm run lint` - Run ESLint
+- `npm run lint` - Run ESLint for code quality checks
+- `npx prisma studio` - Open Prisma Studio for database management
+- `npx prisma generate` - Generate Prisma client
+- `npx prisma db push` - Push schema changes to database
+- `npx prisma migrate dev` - Create and apply database migrations
+
+## 🗄️ Database Schema
+
+The application uses PostgreSQL with the following main entities:
+
+### Core Models
+- **User** - User accounts with profile information, skills, and industry data
+- **Assessment** - Interview quiz results and performance tracking
+- **Resume** - User resume content and ATS scoring
+- **CoverLetter** - Generated cover letters for job applications
+- **IndustryInsight** - AI-generated industry trends and salary data
+
+### Community Models
+- **Post** - Community discussion posts
+- **Comment** - Comments on posts
+- **Like** - User interactions (likes on posts and comments)
+
+### Key Features
+- **Full-text search** on posts and comments
+- **Foreign key relationships** with cascading deletes
+- **Index optimization** for performance
+- **JSON fields** for flexible data storage (quiz questions, salary ranges)
 
 ## 🔒 Authentication Flow
 
