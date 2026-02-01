@@ -22,7 +22,7 @@ const CATEGORIES = [
   "General Discussion",
 ];
 
-export default function CreatePostForm() {
+export default function CreatePostForm({ onPostCreated }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -53,6 +53,7 @@ export default function CreatePostForm() {
         if (onPostCreated) {
           onPostCreated();
         }
+        router.refresh();
       } else {
         toast.error(result.error || "Failed to create post");
       }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import CreatePostForm from "./_components/create-post-form";
 import PostList from "./_components/post-list";
@@ -15,6 +15,11 @@ export default function CommunityPage() {
   const [selectedPost, setSelectedPost] = useState(null);
   const [users, setUsers] = useState([]);
   const [activeTab, setActiveTab] = useState("posts");
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handlePostCreated = useCallback(() => {
+    setRefreshKey(prev => prev + 1);
+  }, []);
 
   const handlePostClick = async (post) => {
     try {
@@ -77,8 +82,9 @@ export default function CommunityPage() {
               />
             ) : (
               <>
-                {session?.user && <CreatePostForm />}
+                {session?.user && <CreatePostForm onPostCreated={handlePostCreated} />}
                 <PostList
+                  key={refreshKey}
                   onPostClick={handlePostClick}
                   userId={session?.user?.id}
                 />

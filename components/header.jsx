@@ -18,7 +18,7 @@ import { useSession, signOut } from "next-auth/react";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuItem, 
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -44,7 +44,7 @@ export default function Header() {
     if (session?.user?.id) {
       fetchAvatar();
     }
-  }, [session, fetchAvatar]);
+  }, [session?.user?.id]);
 
   useEffect(() => {
     if (avatarUrl) {

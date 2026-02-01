@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Heart, MessageCircle, User, Filter } from "lucide-react";
+import { Heart, MessageCircle, User, Filter, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getPosts, toggleLike, getLikeStatus } from "@/actions/community";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { getPosts, toggleLike, getLikeStatus, deletePost } from "@/actions/community";
 import { toast } from "sonner";
 
 const CATEGORIES = [
@@ -112,6 +113,19 @@ export default function PostList({ onPostClick, userId }) {
     }
   };
 
+  const handleDelete = async (postId) => {
+    try {
+      const result = await deletePost(postId);
+      if (result.success) {
+        toast.success("Post deleted successfully");
+        setPosts(prev => prev.filter(post => post.id !== postId));
+      } else {
+        toast.error(result.error || "Failed to delete post");
+      }
+    } catch (error) {
+      toast.error("An error occurred while deleting the post");
+    }
+  };
   if (loading && posts.length === 0) {
     return (
       <div className="space-y-4">
@@ -162,20 +176,59 @@ export default function PostList({ onPostClick, userId }) {
             >
               <div className="flex items-start space-x-3">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={post.user.imageUrl} alt={post.user.name} />
+                  <AvatarImage src={post.user.profilePicture || post.user.imageUrl} alt={post.user.name} />
                   <AvatarFallback>
                     <User className="h-6 w-6" />
                   </AvatarFallback>
                 </Avatar>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
-                      {post.user.name}
-                    </h3>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-                    </span>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <h3 className="font-semibold text-gray-900 dark:text-white">
+                        {post.user.name}
+                      </h3>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                      </span>
+                    </div>
+                    
+                    {/* Delete button - only visible to post creator */}
+                    {userId && post.userId === userId && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-gray-400 hover:text-red-500"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Post</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this post? This action cannot be undone.
+                              All comments and likes on this post will also be deleted.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(post.id);
+                              }}
+                              className="bg-red-500 hover:bg-red-600"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
                   </div>
 
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3 line-clamp-2">

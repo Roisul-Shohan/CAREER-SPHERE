@@ -25,6 +25,7 @@ export async function createPost(data) {
           select: {
             name: true,
             imageUrl: true,
+            profilePicture: true,
           },
         },
         _count: {
@@ -43,6 +44,57 @@ export async function createPost(data) {
   }
 }
 
+// Delete a post (only by the creator)
+export async function deletePost(postId) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      throw new Error("Unauthorized");
+    }
+
+    // Check if the post exists and belongs to the user
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      select: { userId: true },
+    });
+
+    if (!post) {
+      throw new Error("Post not found");
+    }
+
+    if (post.userId !== session.user.id) {
+      throw new Error("You can only delete your own posts");
+    }
+
+    // Delete related likes and comments first
+    await prisma.like.deleteMany({
+      where: { postId },
+    });
+
+    await prisma.like.deleteMany({
+      where: {
+        comment: {
+          postId,
+        },
+      },
+    });
+
+    await prisma.comment.deleteMany({
+      where: { postId },
+    });
+
+    // Delete the post
+    await prisma.post.delete({
+      where: { id: postId },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting post:", error);
+    return { success: false, error: error.message };
+  }
+}
+
 // Get all posts with pagination
 export async function getPosts(page = 1, limit = 10, category = null) {
   try {
@@ -57,6 +109,7 @@ export async function getPosts(page = 1, limit = 10, category = null) {
           select: {
             name: true,
             imageUrl: true,
+            profilePicture: true,
           },
         },
         _count: {
@@ -101,6 +154,7 @@ export async function getPost(id) {
           select: {
             name: true,
             imageUrl: true,
+            profilePicture: true,
           },
         },
         comments: {
@@ -109,6 +163,7 @@ export async function getPost(id) {
               select: {
                 name: true,
                 imageUrl: true,
+                profilePicture: true,
               },
             },
             likes: {
@@ -117,6 +172,7 @@ export async function getPost(id) {
                   select: {
                     name: true,
                     imageUrl: true,
+                    profilePicture: true,
                   },
                 },
               },
@@ -137,6 +193,7 @@ export async function getPost(id) {
               select: {
                 name: true,
                 imageUrl: true,
+                profilePicture: true,
               },
             },
           },
@@ -179,6 +236,7 @@ export async function createComment(postId, content) {
           select: {
             name: true,
             imageUrl: true,
+            profilePicture: true,
           },
         },
         _count: {

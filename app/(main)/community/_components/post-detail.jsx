@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Heart, MessageCircle, Send, User, ArrowLeft, Users } from "lucide-react";
+import { Heart, MessageCircle, Send, User, ArrowLeft, Users, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { toggleLike, createComment } from "@/actions/community";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { toggleLike, createComment, deletePost } from "@/actions/community";
 import { toast } from "sonner";
 
 export default function PostDetail({ post, userId, onBack }) {
@@ -19,6 +20,24 @@ export default function PostDetail({ post, userId, onBack }) {
   const [isLiking, setIsLiking] = useState(false);
   const [postLikeCount, setPostLikeCount] = useState(post._count?.likes || 0);
   const [isPostLiked, setIsPostLiked] = useState(post.likes?.some(like => like.userId === userId) || false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeletePost = async () => {
+    setIsDeleting(true);
+    try {
+      const result = await deletePost(post.id);
+      if (result.success) {
+        toast.success("Post deleted successfully");
+        onBack();
+      } else {
+        toast.error(result.error || "Failed to delete post");
+      }
+    } catch (error) {
+      toast.error("An error occurred while deleting the post");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const handlePostLike = async () => {
     if (!userId) {
@@ -99,7 +118,7 @@ export default function PostDetail({ post, userId, onBack }) {
     return (
       <div className="flex space-x-3">
         <Avatar className="h-8 w-8">
-          <AvatarImage src={comment.user.imageUrl} alt={comment.user.name} />
+          <AvatarImage src={comment.user.profilePicture || comment.user.imageUrl} alt={comment.user.name} />
           <AvatarFallback>
             <User className="h-4 w-4" />
           </AvatarFallback>
@@ -148,7 +167,7 @@ export default function PostDetail({ post, userId, onBack }) {
                       {comment.likes.map((like) => (
                         <div key={like.id} className="flex items-center space-x-3">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={like.user.imageUrl} alt={like.user.name} />
+                            <AvatarImage src={like.user.profilePicture || like.user.imageUrl} alt={like.user.name} />
                             <AvatarFallback>
                               <User className="h-4 w-4" />
                             </AvatarFallback>
@@ -169,19 +188,56 @@ export default function PostDetail({ post, userId, onBack }) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <Button
-        variant="ghost"
-        onClick={onBack}
-        className="mb-4 flex items-center space-x-2"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        <span>Back to Community</span>
-      </Button>
+      <div className="flex items-center justify-between mb-4">
+        <Button
+          variant="ghost"
+          onClick={onBack}
+          className="flex items-center space-x-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back to Community</span>
+        </Button>
+
+        {/* Delete button - only visible to post creator */}
+        {userId && post.userId === userId && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                disabled={isDeleting}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {isDeleting ? "Deleting..." : "Delete Post"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Post</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this post? This action cannot be undone.
+                  All comments and likes on this post will also be deleted.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeletePost}
+                  className="bg-red-500 hover:bg-red-600"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+      </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm mb-6">
         <div className="flex items-start space-x-3 mb-4">
           <Avatar className="h-12 w-12">
-            <AvatarImage src={post.user.imageUrl} alt={post.user.name} />
+            <AvatarImage src={post.user.profilePicture || post.user.imageUrl} alt={post.user.name} />
             <AvatarFallback>
               <User className="h-6 w-6" />
             </AvatarFallback>
@@ -251,7 +307,7 @@ export default function PostDetail({ post, userId, onBack }) {
                       post.likes.map((like) => (
                         <div key={like.id} className="flex items-center space-x-3">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={like.user.imageUrl} alt={like.user.name} />
+                            <AvatarImage src={like.user.profilePicture || like.user.imageUrl} alt={like.user.name} />
                             <AvatarFallback>
                               <User className="h-4 w-4" />
                             </AvatarFallback>

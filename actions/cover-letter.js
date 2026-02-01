@@ -122,3 +122,24 @@ export async function deleteCoverLetter(id) {
         },
     });
 }
+
+export async function saveCoverLetter(id, content) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    const user = await db.user.findUnique({
+        where: { id: session.user.id },
+    });
+
+    if (!user) throw new Error("User not found");
+
+    return await db.coverLetter.update({
+        where: {
+            id,
+            userId: user.id,
+        },
+        data: {
+            content,
+        },
+    });
+}
