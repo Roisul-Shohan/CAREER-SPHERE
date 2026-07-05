@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ function LoginForm() {
   const [success, setSuccess] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const message = searchParams.get("message");
@@ -29,6 +30,12 @@ function LoginForm() {
       setSuccess(message);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/dashboard");
+    }
+  }, [status, router]);
 
   const handleChange = (e) => {
     setFormData({
@@ -52,8 +59,6 @@ function LoginForm() {
       if (result?.error) {
         setError("Invalid email or password");
         setIsLoading(false);
-      } else {
-        router.push("/dashboard");
       }
     } catch (error) {
       setError("Network error. Please try again.");
