@@ -59,6 +59,11 @@ export async function updateUser(data) {
         }
 
         // Now update the user
+        let linkedinId = data.linkedinId?.trim();
+        if (linkedinId) {
+          linkedinId = linkedinId.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//, "").replace(/\/$/, "");
+        }
+
         const updatedUser = await tx.user.update({
           where: {
             id: user.id,
@@ -70,7 +75,7 @@ export async function updateUser(data) {
             experience: data.experience,
             bio: data.bio,
             skills: data.skills,
-            linkedinId: data.linkedinId,
+            linkedinId,
             currentJob: data.currentJob,
             profilePicture: data.profilePicture,
           },

@@ -56,9 +56,15 @@ const OnboardingForm = ({ industries }) => {
         .toLowerCase()
         .replace(/ /g, "-")}`;
 
+      let linkedinId = values.linkedinId?.trim();
+      if (linkedinId) {
+        linkedinId = linkedinId.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//, "").replace(/\/$/, "");
+      }
+
       await updateUserFn({
         ...values,
         industry: formattedIndustry,
+        linkedinId,
       });
     } catch (error) {
       console.error("Onboarding error:", error);

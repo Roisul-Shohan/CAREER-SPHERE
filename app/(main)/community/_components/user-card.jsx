@@ -45,12 +45,12 @@ export default function UserCard({ user }) {
           <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
             <Linkedin className="h-4 w-4" />
             <a
-              href={`https://linkedin.com/in/${user.linkedinId}`}
+              href={user.linkedinId.startsWith("http") ? user.linkedinId : `https://linkedin.com/in/${user.linkedinId}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 truncate"
             >
-              linkedin.com/in/{user.linkedinId}
+              {user.linkedinId.startsWith("http") ? user.linkedinId : `linkedin.com/in/${user.linkedinId}`}
             </a>
           </div>
         )}
