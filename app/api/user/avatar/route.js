@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getUserAvatar } from "@/actions/user";
 import { NextResponse } from "next/server";
 
